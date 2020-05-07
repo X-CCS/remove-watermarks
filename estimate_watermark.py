@@ -1,4 +1,5 @@
 import cv2
+import glob
 import os
 import math
 import numpy as np
@@ -6,38 +7,36 @@ import scipy as sp
 import scipy.fftpack
 from matplotlib import pyplot as plt
 
-# Variables
+
 KERNEL_SIZE = 3
+
 
 def estimate_watermark(folder):
 	"""
-	Given a folder, estimate the watermark (grad(W) = median(grad(J)))
-	Also, give the list of gradients, so that further processing can be done on it
+	estimate the watermark using, grad(W) = median(grad(J))
 	"""
 	if not os.path.exists(folder):
-		print("folder {} not exist".format(folder))
+		print("[estimate watermark] folder {} not exist.".format(folder))
 		exit(1)
 		return
 
-	images = []
-	for i in range(11):
-		img = cv2.imread(folder+"/{}.jpg".format(i+1))
-		if img is not None:
-			images.append(img)
+	ims = []
+	for img in glob.glob("resouces/raw/*.jpg"):
+		im = cv2.imread(img)
+		if im is not None:
+			ims.append(im)
 		else:
-			print("%s not found."%(folder+"/{}.jpg".format(i+1)))
+			print("[estimate watermark] image {} not exist.".format(img))
 
-	# Compute gradients
-	print("Computing gradients.")
-	gradx = list(map(lambda x: cv2.Sobel(x, cv2.CV_64F, 1, 0, ksize=KERNEL_SIZE), images))
-	grady = list(map(lambda x: cv2.Sobel(x, cv2.CV_64F, 0, 1, ksize=KERNEL_SIZE), images))
+	print("[estimate watermark] compute gradients.")
+	grad_x = list(map(lambda x: cv2.Sobel(x, cv2.CV_64F, 1, 0, ksize=KERNEL_SIZE), ims))
+	grad_y = list(map(lambda x: cv2.Sobel(x, cv2.CV_64F, 0, 1, ksize=KERNEL_SIZE), ims))
 
-	# Compute median of grads
-	print("Computing median gradients.")
-	Wm_x = np.median(np.array(gradx), axis=0)
-	Wm_y = np.median(np.array(grady), axis=0)
+	print("[estimate watermark] compute median of all gradients.")
+	Wm_x = np.median(np.array(grad_x), axis=0)
+	Wm_y = np.median(np.array(grad_y), axis=0)
 
-	return (Wm_x, Wm_y, gradx, grady)
+	return (Wm_x, Wm_y, grad_x, grad_y)
 
 
 def PlotImage(image):
