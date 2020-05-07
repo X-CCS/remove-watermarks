@@ -1,32 +1,31 @@
-import sys, os
 import cv2
-import numpy as np
-import warnings
-from matplotlib import pyplot as plt
+import os
 import math
-import numpy
-import scipy, scipy.fftpack
+import numpy as np
+import scipy as sp
+import scipy.fftpack
+from matplotlib import pyplot as plt
 
 # Variables
 KERNEL_SIZE = 3
 
-def estimate_watermark(foldername):
+def estimate_watermark(folder):
 	"""
 	Given a folder, estimate the watermark (grad(W) = median(grad(J)))
 	Also, give the list of gradients, so that further processing can be done on it
 	"""
-	# foldername = './images/fotolia_processed'
-	if not os.path.exists(foldername):
-		warnings.warn("Folder does not exist.", UserWarning)
-		return None
+	if not os.path.exists(folder):
+		print("folder {} not exist".format(folder))
+		exit(1)
+		return
 
 	images = []
 	for i in range(11):
-		img = cv2.imread(foldername+"/{}.jpg".format(i+1))
+		img = cv2.imread(folder+"/{}.jpg".format(i+1))
 		if img is not None:
 			images.append(img)
 		else:
-			print("%s not found."%(foldername+"/{}.jpg".format(i+1)))
+			print("%s not found."%(folder+"/{}.jpg".format(i+1)))
 
 	# Compute gradients
 	print("Computing gradients.")
@@ -57,7 +56,7 @@ def poisson_reconstruct2(gradx, grady, boundarysrc):
 	# Laplacian
 	gyy = grady[1:,:-1] - grady[:-1,:-1]
 	gxx = gradx[:-1,1:] - gradx[:-1,:-1]
-	f = numpy.zeros(boundarysrc.shape)
+	f = np.zeros(boundarysrc.shape)
 	f[:-1,1:] += gxx
 	f[1:,:-1] += gyy
 
@@ -74,8 +73,8 @@ def poisson_reconstruct2(gradx, grady, boundarysrc):
 	fsin = scipy.fftpack.dst(tt.T, norm='ortho').T
 
 	# Eigenvalues
-	(x,y) = numpy.meshgrid(range(1,f.shape[1]+1), range(1,f.shape[0]+1), copy=True)
-	denom = (2*numpy.cos(math.pi*x/(f.shape[1]+2))-2) + (2*numpy.cos(math.pi*y/(f.shape[0]+2)) - 2)
+	(x,y) = np.meshgrid(range(1,f.shape[1]+1), range(1,f.shape[0]+1), copy=True)
+	denom = (2*np.cos(math.pi*x/(f.shape[1]+2))-2) + (2*np.cos(math.pi*y/(f.shape[0]+2)) - 2)
 
 	f = fsin/denom
 
@@ -158,6 +157,7 @@ def normalized(img):
 	Currently required for Chamfer distance for template matching.
 	"""
 	return (2*PlotImage(img)-1)
+
 
 def watermark_detector(img, gx, gy, thresh_low=200, thresh_high=220, printval=False):
 	"""

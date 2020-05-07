@@ -127,8 +127,8 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-<<<<<<< HEAD
-=======
 
 .vscode
->>>>>>> init repo
+/resouces/filled/*.jpg
+/resouces/filled/*.jpeg
+/resouces/filled/*.png

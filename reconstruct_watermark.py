@@ -1,12 +1,15 @@
-import numpy as np
 import cv2
 import os
-import scipy
+import numpy as np
+import scipy as sp
+from numpy import nan
+from numpy import isnan
 from scipy.sparse import *
 from scipy.sparse import linalg
-from src.estimate_watermark import *
-from src.closed_form_matting import *
-from numpy import nan, isnan
+
+from estimate_watermark import *
+from closed_form_matting import *
+
 
 def get_cropped_images(foldername, num_images, start, end, shape):
     '''
@@ -46,6 +49,7 @@ def _get_ysobel_coord(coord, shape):
         (i+1, j, k,  2), (i+1, j-1, k,  1), (i+1, j+1, k,  1)
     ]
 
+
 # get sobel coordinates for x
 def _get_xsobel_coord(coord, shape):
     i, j, k = coord
@@ -55,6 +59,7 @@ def _get_xsobel_coord(coord, shape):
         (i, j+1, k,  2), (i+1, j-1, k,  1), (i+1, j+1, k,  1)
     ]
 
+
 # filter
 def _filter_list_item(coord, shape):
     i, j, k, v = coord
@@ -62,12 +67,14 @@ def _filter_list_item(coord, shape):
     if i>=0 and i<m and j>=0 and j<n:
         return True
 
+
 # Change to ravel index
 # also filters the wrong guys
 def _change_to_ravel_index(li, shape):
     li = filter(lambda x: _filter_list_item(x, shape), li)
     i, j, k, v = zip(*li)
     return zip(np.ravel_multi_index((i, j, k), shape), v)
+
 
 # TODO: Consider wrap around of indices to remove the edge at the end of sobel
 # get Sobel sparse matrix for Y
@@ -107,6 +114,7 @@ def get_xSobel_matrix(m, n, p):
     i, j, vals = zip(*actual_map)
     return coo_matrix((vals, (i, j)), shape=(size, size))
 
+
 # get estimated normalized alpha matte
 def estimate_normalized_alpha(J, W_m, num_images=11, threshold=170, invert=False, adaptive=False, adaptive_threshold=21, c2=10):
     _Wm = (255*PlotImage(np.average(W_m, axis=2))).astype(np.uint8)
@@ -132,6 +140,7 @@ def estimate_normalized_alpha(J, W_m, num_images=11, threshold=170, invert=False
 
     alpha = np.median(alpha, axis=0)
     return alpha
+
 
 def estimate_blend_factor(J, W_m, alph, threshold=0.01*255):
     K, m, n, p = J.shape
@@ -162,8 +171,10 @@ def estimate_blend_factor(J, W_m, alph, threshold=0.01*255):
 def Func_Phi(X, epsilon=1e-3):
     return np.sqrt(X + epsilon**2)
 
+
 def Func_Phi_deriv(X, epsilon=1e-3):
     return 0.5/Func_Phi(X, epsilon)
+
 
 def solve_images(J, W_m, alpha, W_init, gamma=1, beta=1, lambda_w=0.005, lambda_i=1, lambda_a=0.01, iters=4):
     '''

@@ -1,10 +1,10 @@
 from __future__ import division
 
 import numpy as np
+import scipy as sp
 import scipy.sparse
-import scipy
-from scipy.sparse import *
 from numpy.lib.stride_tricks import as_strided
+from scipy.sparse import *
 
 
 def rolling_block(A, block=(3, 3)):
@@ -39,7 +39,7 @@ def computeLaplacian(img, eps=10**(-7), win_rad=1):
     nz_indsCol = np.tile(win_inds, win_size).ravel()
     nz_indsRow = np.repeat(win_inds, win_size).ravel()
     nz_indsVal = vals.ravel()
-    L = scipy.sparse.coo_matrix((nz_indsVal, (nz_indsRow, nz_indsCol)), shape=(h*w, h*w))
+    L = sp.sparse.coo_matrix((nz_indsVal, (nz_indsRow, nz_indsCol)), shape=(h*w, h*w))
     return L
 
 
@@ -53,8 +53,8 @@ def closed_form_matte(img, scribbled_img, mylambda=100):
     b_s = consts_vals.ravel()
     # print("Computing Matting Laplacian")
     L = computeLaplacian(img)
-    sD_s = scipy.sparse.diags(D_s)
+    sD_s = sp.sparse.diags(D_s)
     # print("Solving for alpha")
-    x = scipy.sparse.linalg.spsolve(L + mylambda*sD_s, mylambda*b_s)
+    x = sp.sparse.linalg.spsolve(L + mylambda*sD_s, mylambda*b_s)
     alpha = np.minimum(np.maximum(x.reshape(h, w), 0), 1)
     return alpha

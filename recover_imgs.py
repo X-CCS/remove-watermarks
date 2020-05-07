@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from PIL import Image
 
+
 if __name__ == "__main__":
     for i in range(11):
         dst = Image.open("imgs/filled/{}.jpg".format(i+1))

@@ -1,15 +1,15 @@
 import cv2
-from src.estimate_watermark import *
-from src.watermark_reconstruct import *
+from estimate_watermark import estimate_watermark
+from reconstruct_watermark import *
 
-gx, gy, gxlist, gylist = estimate_watermark('./imgs/filled')
+gx, gy, gxlist, gylist = estimate_watermark('./resouces/filled')
 
 # est = poisson_reconstruct(gx, gy, np.zeros(gx.shape)[:,:,0])
 cropped_gx, cropped_gy = crop_watermark(gx, gy)
 W_m = poisson_reconstruct(cropped_gx, cropped_gy)
 
 # random photo
-img = cv2.imread('imgs/filled/1.jpg')
+img = cv2.imread('resouces/filled/1.jpg')
 im, start, end = watermark_detector(img, cropped_gx, cropped_gy)
 print(start)
 print(end)
@@ -21,7 +21,7 @@ print(end)
 num_images = len(gxlist)
 
 J, img_paths = get_cropped_images(
-    'imgs/filled', num_images, start, end, cropped_gx.shape)
+    'resouces/filled', num_images, start, end, cropped_gx.shape)
 # get a random subset of J
 idx = [389, 144, 147, 468, 423, 92, 3, 354, 196, 53, 470, 445, 314, 349, 105, 366, 56, 168, 351, 15, 465, 368, 90, 96, 202, 54, 295, 137, 17, 79, 214, 413, 454, 305, 187, 4, 458, 330, 290, 73, 220, 118, 125, 180, 247, 243, 257, 194, 117, 320, 104, 252, 87, 95, 228, 324, 271, 398, 334, 148, 425, 190, 78, 151, 34, 310, 122, 376, 102, 260]
 idx = idx[:25]
@@ -53,5 +53,5 @@ Wk, Ik, W, alpha1 = solve_images(Jt, W_m, alpha, W)
 for i in range(11):
     print(Wk.shape)
     print(Ik.shape)
-    cv2.imwrite("imgs/watermark/{}.jpg".format(i+1), Ik[i])
-    cv2.imwrite("imgs/watermark/{}{}.jpg".format(i+1, i+1), Wk[i])
+    cv2.imwrite("resouces/watermark/{}.jpg".format(i+1), Ik[i])
+    cv2.imwrite("resouces/watermark/{}{}.jpg".format(i+1, i+1), Wk[i])
